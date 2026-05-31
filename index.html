@@ -826,21 +826,21 @@
               <div class="contact-icon">📧</div>
               <div>
                 <div class="contact-label">Email</div>
-                <div class="contact-val">venuchandaka513@gmail.com</div>
+                <div class="contact-val" id="contactEmail"></div>
               </div>
             </div>
             <div class="contact-item">
               <div class="contact-icon">📱</div>
               <div>
                 <div class="contact-label">Phone</div>
-                <div class="contact-val">+91 8499836938</div>
+                <div class="contact-val" id="contactPhone"></div>
               </div>
             </div>
             <div class="contact-item">
               <div class="contact-icon">💼</div>
               <div>
                 <div class="contact-label">LinkedIn</div>
-                <div class="contact-val">venu-chandaka-147n513</div>
+                <div class="contact-val" id="contactLinkedIn"></div>
               </div>
             </div>
             <div class="contact-item">
@@ -859,8 +859,8 @@
                 TO ACTIVATE: Sign up free at https://web3forms.com
                 Replace YOUR_ACCESS_KEY below with your key
               -->
-              <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY" />
-              <input type="hidden" name="to_email" value="venuchandaka513@gmail.com" />
+              <input type="hidden" name="access_key" value="" id="accessKeyInput" />
+              <input type="hidden" name="to_email" value="" id="toEmailInput" />
               <input type="hidden" name="subject" value="Portfolio Contact — New Message" />
               <div class="form-row">
                 <div class="form-group">
@@ -891,13 +891,16 @@
     <!-- FOOTER -->
     <footer>
       <div class="footer-socials">
-        <a href="https://linkedin.com/in/venu-chandaka-147n513" target="_blank" class="social-btn" title="LinkedIn">in</a>
-        <a href="mailto:venuchandaka513@gmail.com" class="social-btn" title="Email">✉</a>
-        <a href="tel:+918499836938" class="social-btn" title="Phone">📞</a>
+        <a href="" target="_blank" class="social-btn" id="linkedinLink" title="LinkedIn">in</a>
+        <a href="" class="social-btn" id="emailLink" title="Email">✉</a>
+        <a href="" class="social-btn" id="phoneLink" title="Phone">📞</a>
       </div>
       <p>Designed &amp; Built by <strong>Chandaka Venu</strong> · 2025</p>
     </footer>
   </div>
+
+  <!-- Configuration loader (loads credentials from .env) -->
+  <script src="config.js"></script>
 
   <script>
     // ── Custom Cursor
@@ -963,7 +966,60 @@
     }, { threshold: 0.1 });
     reveals.forEach(r => obs.observe(r));
 
-    // ── Contact Form (Web3Forms)
+    // ── Contact Form (Web3Forms) & Config Initialization
+    // Wait for config to load, then initialize
+    function initializePortfolioConfig() {
+      // Set contact info fields from config
+      const emailField = document.getElementById('contactEmail');
+      const phoneField = document.getElementById('contactPhone');
+      const linkedinField = document.getElementById('contactLinkedIn');
+      const toEmailInput = document.getElementById('toEmailInput');
+      const accessKeyInput = document.getElementById('accessKeyInput');
+      
+      if (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.email) {
+        if (emailField) emailField.textContent = window.PORTFOLIO_CONFIG.email;
+        if (phoneField) phoneField.textContent = window.PORTFOLIO_CONFIG.phone;
+        if (linkedinField) linkedinField.textContent = window.PORTFOLIO_CONFIG.linkedin;
+        if (toEmailInput) toEmailInput.value = window.PORTFOLIO_CONFIG.email;
+        if (accessKeyInput) accessKeyInput.value = window.PORTFOLIO_CONFIG.web3formsKey || '';
+        console.log('✓ Portfolio config initialized');
+      }
+      
+      // Set footer social links
+      const linkedinLink = document.getElementById('linkedinLink');
+      const emailLink = document.getElementById('emailLink');
+      const phoneLink = document.getElementById('phoneLink');
+      
+      if (window.PORTFOLIO_CONFIG) {
+        if (linkedinLink && window.PORTFOLIO_CONFIG.linkedin) {
+          linkedinLink.href = `https://linkedin.com/in/${window.PORTFOLIO_CONFIG.linkedin}`;
+        }
+        if (emailLink && window.PORTFOLIO_CONFIG.email) {
+          emailLink.href = `mailto:${window.PORTFOLIO_CONFIG.email}`;
+        }
+        if (phoneLink && window.PORTFOLIO_CONFIG.phone) {
+          // Remove spaces and special characters for tel: link
+          const phoneDigits = window.PORTFOLIO_CONFIG.phone.replace(/\D/g, '');
+          phoneLink.href = `tel:+${phoneDigits}`;
+        }
+      }
+    }
+
+    // Initialize config after a small delay to ensure config.json loads
+    let configCheckCount = 0;
+    const configCheckInterval = setInterval(() => {
+      configCheckCount++;
+      if (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.email && window.PORTFOLIO_CONFIG.email !== 'your-email@example.com') {
+        initializePortfolioConfig();
+        clearInterval(configCheckInterval);
+      } else if (configCheckCount > 50) {
+        // After 5 seconds, initialize with whatever we have
+        initializePortfolioConfig();
+        clearInterval(configCheckInterval);
+        console.warn('⚠️ config.json may not have loaded properly');
+      }
+    }, 100);
+
     document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const btn = this.querySelector('.form-submit');
@@ -972,20 +1028,28 @@
       btn.disabled = true;
       try {
         const fd = new FormData(this);
+        const accessKey = fd.get('access_key');
+        
+        if (!accessKey || accessKey === '') {
+          throw new Error('Missing Web3Forms API key');
+        }
+        
         const res = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           body: fd
         });
         const data = await res.json();
+        
         if (data.success) {
           msg.textContent = '✅ Message sent! I\'ll get back to you soon.';
           msg.className = 'form-msg success';
           this.reset();
         } else {
-          throw new Error(data.message);
+          throw new Error(data.message || 'Form submission failed');
         }
       } catch (err) {
-        msg.textContent = '⚠️ To activate this form: sign up at web3forms.com (free), get your Access Key, and replace YOUR_ACCESS_KEY in the HTML.';
+        console.error('Form error:', err);
+        msg.textContent = `❌ Error: ${err.message}\n\n✋ Fix: Update config.json with your actual Web3Forms Access Key from web3forms.com`;
         msg.className = 'form-msg error';
       }
       btn.textContent = 'Send Message →';
