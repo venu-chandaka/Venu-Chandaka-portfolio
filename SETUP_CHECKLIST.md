@@ -22,7 +22,7 @@ Edit `config.json` and update these values:
   "email": "venuchandaka513@gmail.com",           ← Your actual email
   "phone": "+91 8499836938",                      ← Your actual phone
   "linkedin": "venu-chandaka-147n513",            ← Your LinkedIn profile ID
-  "web3formsKey": "4cdab42a-a546-4221-a7b7-160023d79f5a"  ← Your Web3Forms key
+  "web3formsKey": "Your Web3Forms key"
 }
 ```
 
