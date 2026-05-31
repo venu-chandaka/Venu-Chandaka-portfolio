@@ -1,0 +1,5 @@
+# Ignore local environment file containing secrets
+.env
+
+# Ignore config.json with actual API keys (keep config.json.example instead)
+config.json

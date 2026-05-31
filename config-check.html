@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Config Check</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #050a18;
+      color: #e2e8f0;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .status { padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+    .success { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.5); }
+    .error { background: rgba(244,63,94,0.2); border: 1px solid rgba(244,63,94,0.5); }
+    .warning { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5); }
+    code { background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; }
+    h1 { color: #00e5ff; }
+  </style>
+</head>
+<body>
+  <h1>📋 Portfolio Configuration Check</h1>
+  <div id="results"></div>
+
+  <script src="config.js"></script>
+  <script>
+    const results = document.getElementById('results');
+
+    function addStatus(title, passed, details) {
+      const statusClass = passed ? 'success' : (details ? 'error' : 'warning');
+      const emoji = passed ? '✅' : '❌';
+      const html = `<div class="status ${statusClass}">
+        <strong>${emoji} ${title}</strong>
+        ${details ? `<p>${details}</p>` : ''}
+      </div>`;
+      results.innerHTML += html;
+    }
+
+    // Wait for config to load
+    setTimeout(() => {
+      console.log('window.PORTFOLIO_CONFIG:', window.PORTFOLIO_CONFIG);
+
+      // Check email
+      const hasEmail = window.PORTFOLIO_CONFIG?.email && window.PORTFOLIO_CONFIG.email !== 'your-email@example.com';
+      addStatus(
+        'Email Configured',
+        hasEmail,
+        hasEmail ? `Email: <code>${window.PORTFOLIO_CONFIG.email}</code>` : 'Email not configured in config.json'
+      );
+
+      // Check phone
+      const hasPhone = window.PORTFOLIO_CONFIG?.phone && window.PORTFOLIO_CONFIG.phone !== '+1 000-000-0000';
+      addStatus(
+        'Phone Configured',
+        hasPhone,
+        hasPhone ? `Phone: <code>${window.PORTFOLIO_CONFIG.phone}</code>` : 'Phone not configured in config.json'
+      );
+
+      // Check LinkedIn
+      const hasLinkedIn = window.PORTFOLIO_CONFIG?.linkedin && window.PORTFOLIO_CONFIG.linkedin !== 'your-linkedin-profile';
+      addStatus(
+        'LinkedIn Configured',
+        hasLinkedIn,
+        hasLinkedIn ? `LinkedIn: <code>${window.PORTFOLIO_CONFIG.linkedin}</code>` : 'LinkedIn not configured in config.json'
+      );
+
+      // Check Web3Forms key
+      const hasKey = window.PORTFOLIO_CONFIG?.web3formsKey && window.PORTFOLIO_CONFIG.web3formsKey.length > 10;
+      addStatus(
+        'Web3Forms Key Configured',
+        hasKey,
+        hasKey ? `✓ Key is set (${window.PORTFOLIO_CONFIG.web3formsKey.substring(0, 10)}...)` : 'Web3Forms key is missing or invalid'
+      );
+
+      // Overall status
+      if (hasEmail && hasPhone && hasLinkedIn && hasKey) {
+        results.innerHTML += '<div class="status success"><h3>🎉 All systems ready!</h3><p>Your portfolio configuration is complete and working correctly.</p></div>';
+      } else {
+        results.innerHTML += '<div class="status error"><h3>⚠️ Configuration incomplete</h3><p>Please update <code>config.json</code> with your actual credentials.</p></div>';
+      }
+    }, 300);
+  </script>
+</body>
+</html>

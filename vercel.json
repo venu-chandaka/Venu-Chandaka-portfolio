@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "env": {
+    "VITE_PORTFOLIO_EMAIL": "@portfolio_email",
+    "VITE_PORTFOLIO_PHONE": "@portfolio_phone",
+    "VITE_PORTFOLIO_LINKEDIN": "@portfolio_linkedin",
+    "VITE_WEB3FORMS_KEY": "@web3forms_key"
+  }
+}
